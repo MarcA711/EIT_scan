@@ -46,6 +46,12 @@ def do_scan():
     data_string = rp.rx_txt()
 
     data_string = data_string.strip('{}\n\r').replace("  ", "").split(',')
-    data = list(map(float, data_string))
+    data_src1 = list(map(float, data_string))
 
-    return data
+    rp.tx_txt(f'ACQ:SOUR2:DATA?')
+    data_string = rp.rx_txt()
+
+    data_string = data_string.strip('{}\n\r').replace("  ", "").split(',')
+    data_src2 = list(map(float, data_string))
+
+    return (data_src1, data_src2)

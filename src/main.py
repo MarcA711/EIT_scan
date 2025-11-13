@@ -11,16 +11,21 @@ class MyWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-        self.graph = pg.PlotWidget()
+        self.graph = pg.GraphicsLayoutWidget()
+        self.eit_plot = self.graph.addPlot(row=0, col=0)
+        self.control_plot = self.graph.addPlot(row=1, col=0)
+        self.button = QtWidgets.QPushButton("Start scan")
 
         self.layout = QtWidgets.QVBoxLayout(self)
         self.layout.addWidget(self.graph)
+        self.layout.addWidget(self.button)
 
-        data = do_scan()
-        # x = np.linspace(0, 1, len(data))
-        self.graph.plotItem.plot(data)
+        self.button.clicked.connect(self.scan_wrapper)
 
-
+    def scan_wrapper(self):
+        data1, data2 = do_scan()
+        self.eit_plot.plot(data1)
+        self.control_plot.plot(data1)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
