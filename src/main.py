@@ -25,7 +25,7 @@ class MyWidget(QtWidgets.QWidget):
     def scan_wrapper(self):
         data1, data2 = do_scan()
         self.eit_plot.plot(data1)
-        self.control_plot.plot(data1)
+        self.control_plot.plot(data2)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
