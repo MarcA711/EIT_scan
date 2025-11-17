@@ -14,9 +14,12 @@ class MyWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-        self.scan_data = {}
+        self.scan_data = {
+            "current": None
+        }
 
         self.model = QtGui.QStandardItemModel()
+        self.model.appendRow(self.new_item("current"))
         self.model.itemChanged.connect(self.plot_data)
 
         self.layout = QtWidgets.QVBoxLayout(self)
@@ -67,45 +70,58 @@ class MyWidget(QtWidgets.QWidget):
 
     def new_item(self, text):
         item = QtGui.QStandardItem(text)
-        item.setCheckState(QtCore.Qt.CheckState.Unchecked)
+        item.setCheckState(QtCore.Qt.CheckState.Checked)
         item.setCheckable(True)
         item.setEditable(False)
+
+        idx = self.model.rowCount()
+        color = pg.intColor(idx)
+        pixmap = QtGui.QPixmap(100, 100)
+        pixmap.fill(QtGui.QColor(255,255,255,255))
+        painter = QtGui.QPainter(pixmap)
+        painter.setBrush(color)
+        painter.drawRect(0,45,100,10)
+        painter.end()
+        item.setIcon(pixmap)
+
+
         return item
         # self.model.appendRow(item)
 
     def scan_wrapper(self):
         result = do_scan()
 
-        if "current" not in self.scan_data:
-            self.model.insertRow(0, self.new_item("current"))
-
         self.scan_data["current"] = result
         self.plot_data()
 
     def save_current_data(self):
-        if "current" not in self.scan_data:
+        if self.scan_data["current"] is None:
             return
         path = QtWidgets.QFileDialog.getSaveFileName(filter="*.dat")
         path = Path(path[0]).with_suffix(".dat")
         
-        with open(path, "w") as f:
+        with open(path, "wb") as f:
             pickle.dump(self.scan_data["current"], f)
 
         basename = path.stem
         self.scan_data[basename] = self.scan_data["current"]
+        self.scan_data["current"] = None
 
-        self.model.removeRow(0)
         self.model.appendRow(self.new_item(basename))
+        self.plot_data()
 
     def load_data(self):
         path = QtWidgets.QFileDialog.getOpenFileName(filter="*.dat")
         path = Path(path[0])
+        if not(path.exists()):
+            return
         basename = path.stem
 
-        with open(path) as f:
+        with open(path, "rb") as f:
             self.scan_data[basename] = pickle.load(f)
 
-        self.new_item(basename)
+        self.model.appendRow(self.new_item(basename))
+        self.plot_data()
 
     def plot_data(self):
         self.eit_plot.clear()
@@ -113,10 +129,15 @@ class MyWidget(QtWidgets.QWidget):
 
         for row in range(self.model.rowCount()):
             item = self.model.item(row)
+            color = pg.intColor(row)
+   
             if item.checkState() == QtCore.Qt.CheckState.Checked:
-                result = self.plot_data[item.text()]
-                self.eit_plot.plot(result["voltage"], result["eit_clean"])
-                self.signal_plot.plot(result["voltage"], result["signal_clean"])
+                pen = pg.mkPen(color, width=2)
+                result = self.scan_data[item.text()]
+                if result is None:
+                    continue
+                self.eit_plot.plot(result["voltage"], result["eit_clean"], pen=pen)
+                self.signal_plot.plot(result["voltage"], result["signal_clean"], pen=pen)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
