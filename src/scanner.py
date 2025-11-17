@@ -4,6 +4,24 @@ from numpy import linspace
 IP = 'rp-f097bc.local'
 rp = scpi.scpi(IP)
 
+# # generate values for testing
+# def do_scan():
+#     # parameters for signal generation and acquisition
+#     freq = 1
+#     ampl = 1
+#     offset = 0
+
+#     decimation_factor = 8192
+#     acq_duration = (decimation_factor * (2**14)) / (125e6)
+#     gen_duration =  1 / freq
+#     gen_acq_frac = gen_duration / acq_duration
+
+#     num_samples_during_gen = round(2**14 * gen_acq_frac)
+#     num_samples_segment = round(num_samples_during_gen/4)
+#     end_seg_1 = 1 * num_samples_segment
+#     end_seg_2 = 3 * num_samples_segment
+#     end_seg_3 = 4 * num_samples_segment
+
 def do_scan():
     # parameters for signal generation and acquisition
     freq = 1
