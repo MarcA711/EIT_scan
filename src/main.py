@@ -44,10 +44,12 @@ class MyWidget(QtWidgets.QWidget):
         self.eit_plot: pg.PlotItem = self.graph.addPlot(row=0, col=0)
         self.eit_plot.setLabels(title="EIT", bottom="", left="Volatage [V]")
         self.eit_plot.showGrid(x=True, y=True)
+        self.eit_plot.getViewBox().invertX(True)
 
         self.signal_plot: pg.PlotItem = self.graph.addPlot(row=1, col=0)
         self.signal_plot.setLabels(title="Signal", bottom="", left="Volatage [V]")
         self.signal_plot.showGrid(x=True, y=True)
+        self.signal_plot.getViewBox().invertX(True)
 
         self.properties = QtWidgets.QWidget()
         self.main_split.addWidget(self.properties)
