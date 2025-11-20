@@ -34,7 +34,7 @@ class ScanWorker(QObject):
         end_seg_2 = 3 * num_samples_segment
         end_seg_3 = 4 * num_samples_segment
 
-        result = { "voltage": linspace(-ampl + offset, ampl + offset, 2*num_samples_segment) }
+        result = { "voltage": linspace(ampl + offset, -ampl + offset, 2*num_samples_segment) }
 
         # reset generation and acquisition
         self.rp.tx_txt('GEN:RST')
@@ -45,7 +45,7 @@ class ScanWorker(QObject):
         self.rp.tx_txt(f'SOUR1:FREQ:FIX {freq}')
         self.rp.tx_txt(f'SOUR1:VOLT {ampl}')
         self.rp.tx_txt(f'SOUR1:VOLT:OFFS {offset}')
-        self.rp.tx_txt('SOUR1:PHAS 180')
+        # self.rp.tx_txt('SOUR1:PHAS 180')
 
         self.rp.tx_txt('SOUR1:BURS:STAT BURST')
         self.rp.tx_txt('SOUR1:BURS:NCYC 1')
