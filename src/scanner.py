@@ -116,6 +116,6 @@ class ScanWorker(QObject):
         self.finished_scan.emit(result)
 
     def do_repeated_scan(self):
-        self._stop = True
+        self._stop = False
         while not self._stop:
-            self.do_single_scan
+            self.do_single_scan()
