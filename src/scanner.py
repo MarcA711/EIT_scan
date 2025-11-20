@@ -65,7 +65,7 @@ class ScanWorker(QObject):
         self.rp.tx_txt('SOUR1:TRig:INT')
 
         
-        self.rp.tx_txt('ACQ:AXI:SOUR1:Trig:Pos?')
+        self.rp.tx_txt('ACQ:TPOS?')
         signal_trig_pointer = int(self.rp.rx_txt())
 
         while True:
@@ -73,21 +73,22 @@ class ScanWorker(QObject):
             if self.rp.rx_txt() == '1':
                 break
 
-            self.rp.tx_txt('ACQ:AXI:SOUR1:Write:Pos?')
+            self.rp.tx_txt('ACQ:WPOS?')
             signal_curr_pointer = int(self.rp.rx_txt())
 
-            num = signal_curr_pointer - signal_trig_pointer
-            num = num + 2**14 if num < 0 else num
-            num += num_samples_segment
-            if num < 0:
+            new_samples = (signal_curr_pointer - signal_trig_pointer) % (2**14)
+            if new_samples < num_samples_segment:
                 continue
-            num = num if num < 2*num_samples_during_gen else 2*num_samples_during_gen
 
-            self.rp.tx_txt(f'ACQ:AXI:SOUR1:DATA:Start:N? {(signal_trig_pointer+num_samples_during_gen) % (2**14)},{num}>')
+            signal_read_pointer = (signal_trig_pointer + num_samples_segment) % (2**14)
+            new_samples -= num_samples_segment
+            new_samples = 2*num_samples_segment if new_samples > 2*num_samples_segment else new_samples
+
+            self.rp.tx_txt(f'ACQ:SOUR1:DATA:Start:N? {signal_read_pointer},{new_samples}')
 
             data_string = self.rp.rx_txt()
-
             data_string = data_string.strip('{}\n\r').replace("  ", "").split(',')
+
             data = list(map(float, data_string))
             signal_result = {
                 "voltage": result["voltage"][:len(data)],
