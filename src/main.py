@@ -81,7 +81,7 @@ class MyWidget(QtWidgets.QWidget):
         self.scan_control_box_layout = QtWidgets.QVBoxLayout()
         self.scan_control_box.setLayout(self.scan_control_box_layout)
         self.scan_control_button_layout = QtWidgets.QHBoxLayout()
-        self.data_control_box_layout.addWidget(self.scan_control_button_layout)
+        self.scan_control_box_layout.addLayout(self.scan_control_button_layout)
 
         self.single_scan_button = QtWidgets.QPushButton("Single scan")
         self.scan_control_button_layout.addWidget(self.single_scan_button)

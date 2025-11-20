@@ -101,8 +101,8 @@ class ScanWorker(QObject):
         data_string = data_string.strip('{}\n\r').replace("  ", "").split(',')
         data = list(map(float, data_string))
 
-        result["eit_clean"] = data[end_seg_1:end_seg_2],
-        result["eit_split"] = list(reversed(data[end_seg_2:end_seg_3] + data[:end_seg_1])),
+        result["eit_clean"] = data[end_seg_1:end_seg_2]
+        result["eit_split"] = list(reversed(data[end_seg_2:end_seg_3] + data[:end_seg_1]))
 
         self.rp.tx_txt(f'ACQ:SOUR1:DATA?')
         data_string = self.rp.rx_txt()
