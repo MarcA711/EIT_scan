@@ -1,5 +1,5 @@
 import redpitaya_scpi as scpi
-from numpy import linspace, argmin
+from numpy import linspace, argmax
 
 import matplotlib.pyplot as plt
 
@@ -83,7 +83,7 @@ class ScanWorker(QObject):
                 continue
 
             signal_read_pointer = (signal_trig_pointer + num_samples_segment - region_startpoint) % (2**14)
-            new_samples -= num_samples_segment + region_startpoint
+            new_samples -= num_samples_segment - region_startpoint
             new_samples = 2*num_samples_segment + region_startpoint if new_samples > 2*num_samples_segment + region_startpoint else new_samples
 
             self.rp.tx_txt(f'ACQ:SOUR1:DATA:Start:N? {signal_read_pointer},{new_samples}')
@@ -92,9 +92,10 @@ class ScanWorker(QObject):
             data_string = data_string.strip('{}\n\r').replace("  ", "").split(',')
             data = list(map(float, data_string))
 
-            startpoint_index = argmin(data[0: 2 * region_startpoint])
+            startpoint_index = argmax(data[0: 2 * region_startpoint])
+            data = data[startpoint_index : len(result["voltage"]) + startpoint_index]
             signal_result = {
-                "voltage": result["voltage"][startpoint_index : len(data) + startpoint_index],
+                "voltage": result["voltage"][:len(data)],
                 "signal_clean": data
             }
             self.update_signal.emit(signal_result)
@@ -105,8 +106,8 @@ class ScanWorker(QObject):
         data_string = data_string.strip('{}\n\r').replace("  ", "").split(',')
         data = list(map(float, data_string))
 
-        startpoint_index = argmin(data[end_seg_1 - region_startpoint : end_seg_1 + region_startpoint]) - region_startpoint
-        result["eit_clean"] = data[end_seg_1 - startpoint_index : end_seg_2 - startpoint_index]
+        startpoint_index = argmax(data[end_seg_1 - region_startpoint : end_seg_1 + region_startpoint]) - region_startpoint
+        result["eit_clean"] = data[end_seg_1 + startpoint_index : end_seg_2 + startpoint_index]
         # result["eit_split"] = list(reversed(data[end_seg_2:end_seg_3] + data[:end_seg_1]))
 
         self.rp.tx_txt(f'ACQ:SOUR1:DATA?')
@@ -115,8 +116,8 @@ class ScanWorker(QObject):
         data_string = data_string.strip('{}\n\r').replace("  ", "").split(',')
         data = list(map(float, data_string))
 
-        startpoint_index = argmin(data[end_seg_1 - region_startpoint : end_seg_1 + region_startpoint]) - region_startpoint
-        result["signal_clean"] = data[end_seg_1 - startpoint_index : end_seg_2 - startpoint_index]
+        startpoint_index = argmax(data[end_seg_1 - region_startpoint : end_seg_1 + region_startpoint]) - region_startpoint
+        result["signal_clean"] = data[end_seg_1 + startpoint_index : end_seg_2 + startpoint_index]
         # result["signal_split"] = list(reversed(data[end_seg_2:end_seg_3] + data[:end_seg_1]))
 
         self.finished_scan.emit(result)
