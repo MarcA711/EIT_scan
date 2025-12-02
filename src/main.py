@@ -84,6 +84,8 @@ class MyWidget(QtWidgets.QWidget):
         self.scan_control_box.setLayout(self.scan_control_box_layout)
         self.scan_control_button_layout = QtWidgets.QHBoxLayout()
         self.scan_control_box_layout.addLayout(self.scan_control_button_layout)
+        self.update_signal_toggle = QtWidgets.QCheckBox("Update Signal")
+        self.scan_control_box_layout.addWidget(self.update_signal_toggle)
 
         self.single_scan_button = QtWidgets.QPushButton("Single scan")
         self.scan_control_button_layout.addWidget(self.single_scan_button)
@@ -115,9 +117,10 @@ class MyWidget(QtWidgets.QWidget):
         return item
 
     def update_scan_data(self, result):
-        self.scan_data["current"] = result
-        self.signal_update_data = None
-        self.plot_data()
+        if self.update_signal_toggle.checkState().value:
+            self.scan_data["current"] = result
+            self.signal_update_data = None
+            self.plot_data()
 
     def update_signal(self, result):
         self.signal_update_data = result
@@ -181,17 +184,16 @@ class MyWidget(QtWidgets.QWidget):
                     if self.signal_update_data is None and result is None:
                         continue
                     elif result is None:
-                        self.signal_plot.plot(self.signal_update_data["voltage"], self.signal_update_data["signal_clean"], pen=pen)
+                        self.signal_plot.plot(self.signal_update_data["x_values"], self.signal_update_data["signal_clean"], pen=pen)
                         continue
                     elif self.signal_update_data is not None and result is not None:
-                        self.signal_plot.plot(self.signal_update_data["voltage"], self.signal_update_data["signal_clean"], pen=pen)
                         len_update_signal_data = len(self.signal_update_data["signal_clean"])
-                        self.signal_plot.plot(result["voltage"][len_update_signal_data:], result["signal_clean"][len_update_signal_data:], pen=pen)
-                        self.eit_plot.plot(result["voltage"], result["eit_clean"], pen=pen)
+                        self.signal_plot.plot(self.result["x_values"], self.signal_update_data["signal_clean"] + result["signal_clean"][len_update_signal_data:], pen=pen)
+                        self.eit_plot.plot(result["x_values"], result["eit_clean"], pen=pen)
                         continue
 
-                self.signal_plot.plot(result["voltage"], result["signal_clean"], pen=pen)
-                self.eit_plot.plot(result["voltage"], result["eit_clean"], pen=pen)
+                self.signal_plot.plot(result["x_values"], result["signal_clean"], pen=pen)
+                self.eit_plot.plot(result["x_values"], result["eit_clean"], pen=pen)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])

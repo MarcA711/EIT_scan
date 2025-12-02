@@ -1,5 +1,6 @@
 import redpitaya_scpi as scpi
 from numpy import linspace
+from fitting import CsFit
 
 from PySide6.QtCore import QObject, Signal
 
@@ -32,7 +33,7 @@ class ScanWorker(QObject):
         end_seg_2 = 3 * num_samples_segment
         end_seg_3 = 4 * num_samples_segment
 
-        result = { "voltage": linspace(ampl + offset, -ampl + offset, 2*num_samples_segment) }
+        result = { "x_values": linspace(ampl + offset, -ampl + offset, 2*num_samples_segment) }
 
         # reset generation and acquisition
         self.rp.tx_txt('GEN:RST')
@@ -88,9 +89,10 @@ class ScanWorker(QObject):
             data_string = data_string.strip('{}\n\r').replace("  ", "").split(',')
             data = list(map(float, data_string))
 
-            data = data[:len(result["voltage"])]
+            data = data[:len(result["x_values"])]
             signal_result = {
-                "voltage": result["voltage"][:len(data)],
+                "x_values": result["x_values"][:len(data)],
+                "x_unit": "none",
                 "signal_clean": data
             }
             self.update_signal.emit(signal_result)
@@ -111,6 +113,8 @@ class ScanWorker(QObject):
         data = list(map(float, data_string))
 
         result["signal_clean"] = data[end_seg_1 : end_seg_2]
+        result["x_values"] = CsFit(result["signal_clean"]).fit()
+        result["x_unit"] = "frequency"
         # result["signal_split"] = list(reversed(data[end_seg_2:end_seg_3] + data[:end_seg_1]))
 
         self.finished_scan.emit(result)
